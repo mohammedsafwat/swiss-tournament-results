@@ -14,4 +14,4 @@ CREATE DATABASE tournament;
 -- id : the serial id of players and name : the name of each player
 CREATE TABLE players (player_id serial primary key, player_name text);
 -- Create matches table
-CREATE TABLE matches(match_id serial, player1_id serial, player2_id serial, winner_id serial references players(player_id));
+CREATE TABLE matches(match_id serial primary key, winner_id int, loser_id int, foreign key(winner_id) references players(player_id), foreign key(loser_id) references players(player_id));
