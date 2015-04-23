@@ -47,7 +47,7 @@ def createTournament(name):
     """Create a new tournament"""
     db = connect()
     cursor = db.cursor()
-    cursor.execute("INSERT INTO tournaments(tournament_name) VALUES(%s)", (name,))
+    cursor.execute("INSERT INTO tournaments(tournament_name) VALUES(%s) RETURNING tournament_id", (name,))
     row_id = cursor.fetchone()[0]
     db.commit()
     db.close()
@@ -103,7 +103,7 @@ def registerPlayer(name):
     """
     db = connect()
     cursor = db.cursor()
-    cursor.execute("INSERT INTO players(player_name) VALUES(%s)", (name,))
+    cursor.execute("INSERT INTO players(player_name) VALUES(%s) RETURNING player_id", (name,))
     row_id = cursor.fetchone()[0]
     db.commit()
     db.close()
@@ -135,7 +135,7 @@ def playerStandings(tournament):
     LEFT JOIN matches ON players.player_id = matches.winner_id
     AND
     players_in_tournaments.tournament_id = matches.tournament_id
-    GROUP BY players.player_id, players_in_tournaments.player_id
+    GROUP BY players.player_id, players_in_tournaments.tournament_id
     ORDER BY number_of_wins DESC
     """
     cursor.execute(number_of_wins_query)
@@ -150,7 +150,7 @@ def playerStandings(tournament):
     LEFT JOIN matches ON players.player_id = matches.loser_id
     AND
     players_in_tournaments.tournament_id = matches.tournament_id
-    GROUP BY players.player_id, players_in_tournaments.player_id
+    GROUP BY players.player_id, players_in_tournaments.tournament_id
     ORDER BY number_of_losses DESC
     """
     cursor.execute(number_of_losses_query)
