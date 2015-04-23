@@ -3,18 +3,15 @@
 # Test cases for tournament.py
 
 from tournament import *
-import psycopg2
 
 def testDeleteMatches():
     deleteMatches()
     print("1. Old matches can be deleted.")
 
-
 def testDelete():
     deleteMatches()
     deletePlayers()
     print("2. Player records can be deleted.")
-
 
 def testCount():
     deleteMatches()
@@ -26,7 +23,6 @@ def testCount():
     if c != 0:
         raise ValueError("After deleting, countPlayers should return zero.")
     print("3. After deleting, countPlayers() returns zero.")
-
 
 def testRegister():
     deleteMatches()
@@ -157,7 +153,7 @@ def testDeleteTournaments():
     # Check that there are no tournaments in the table
     db = connect()
     cursor = db.cursor()
-    cursor.execute("SELECT COUNT(*) FROM tournament;")
+    cursor.execute("SELECT COUNT(*) FROM tournaments;")
     count = cursor.fetchall()[0][0]
     db.close()
     if count != 0:
@@ -191,7 +187,7 @@ def testCreateTournament():
 def getCurrentTournamentsCount():
     db = connect()
     cursor = db.cursor()
-    cursor.execute("SELECT COUNT(*) FROM tournament;")
+    cursor.execute("SELECT COUNT(*) FROM tournaments;")
     count = cursor.fetchall()[0][0]
     db.close()
     return count
@@ -203,9 +199,13 @@ def testAddPlayerToTournament():
 
     tournament1 = createTournament("tournament1")
     tournament2 = createTournament("tournament2")
-    player1 = registerPlayer("Mark", tournament1)
-    player2 = registerPlayer("Angelina", tournament2)
-    player3 = registerPlayer("Tom", tournament2)
+    player1 = registerPlayer("Mark")
+    player2 = registerPlayer("Angelina")
+    player3 = registerPlayer("Tom")
+
+    addPlayerToTournament(player1, tournament1)
+    addPlayerToTournament(player2, tournament2)
+    addPlayerToTournament(player3, tournament2)
 
     # test tournament1
     db = connect()
@@ -307,7 +307,7 @@ def testStandingsBeforeMatchesByTournament():
     if matches1 != 0 or matches2 != 0 or wins1 != 0 or wins2 != 0:
         raise ValueError(
             "Newly registered players should have no matches or wins.")
-    if set([name1, name2]) != set(["Melpomene Murray", "Randy Schwartz"]):
+    if set([name1, name2]) != set(["Sam", "Randy"]):
         raise ValueError("Registered players' names should appear in standings, "
                          "even if they have no matches played.")
 
@@ -323,7 +323,7 @@ def testStandingsBeforeMatchesByTournament():
     if matches1 != 0 or matches2 != 0 or wins1 != 0 or wins2 != 0:
         raise ValueError(
             "Newly registered players should have no matches or wins.")
-    if set([name1, name2]) != set(["Randy Schwartz", "Bob, son of Tim"]):
+    if set([name1, name2]) != set(["Randy", "Bob"]):
         raise ValueError("Registered players' names should appear in standings, "
                          "even if they have no matches played.")
 
@@ -334,63 +334,49 @@ def testReportMatchesByTournament():
     deleteMatches()
     deletePlayers()
     deleteTournaments()
-    t1 = createTournament("t1")
-    t2 = createTournament("t2")
-    p1 = registerPlayer("Bruno Walton")
-    p2 = registerPlayer("Boots O'Neal")
-    p3 = registerPlayer("Cathy Burton")
-    p4 = registerPlayer("Diane Grant")
-    p5 = registerPlayer("Bob, son of Tim")
-    p6 = registerPlayer("Ted, son of Ed")
-    addPlayerToTournament(p1, t1)
-    addPlayerToTournament(p2, t1)
-    addPlayerToTournament(p3, t1)
-    addPlayerToTournament(p4, t1)
-    addPlayerToTournament(p2, t2)
-    addPlayerToTournament(p3, t2)
-    addPlayerToTournament(p4, t2)
-    addPlayerToTournament(p5, t2)
+    tournament1 = createTournament("t1")
+    tournament2 = createTournament("t2")
+    player1 = registerPlayer("Bruno Walton")
+    player2 = registerPlayer("Boots O'Neal")
+    player3 = registerPlayer("Cathy Burton")
+    player4 = registerPlayer("Diane Grant")
+    player5 = registerPlayer("Joe Malik")
+    player6 = registerPlayer("Ted, son of Ed")
+    addPlayerToTournament(player1, tournament1)
+    addPlayerToTournament(player2, tournament1)
+    addPlayerToTournament(player3, tournament1)
+    addPlayerToTournament(player4, tournament1)
+    addPlayerToTournament(player2, tournament2)
+    addPlayerToTournament(player3, tournament2)
+    addPlayerToTournament(player4, tournament2)
+    addPlayerToTournament(player5, tournament2)
 
-    reportMatch(p1, p2, t1)
-    reportMatch(p3, p4, t1)
+    reportMatch(player1, player2, tournament1)
+    reportMatch(player3, player4, tournament1)
 
-    reportMatch(p3, p4, t2)
-    reportMatch(p5, p2, t2)
+    reportMatch(player3, player4, tournament2)
+    reportMatch(player5, player2, tournament2)
 
-    # Test that matches can only be reported where the players have already entered the tournament
-    try:
-        reportMatch(p5, p6, t1)
-    except psycopg2.InternalError as e:
-        if not e.message.startswith("Attempted to record match involving player"):
-            raise
-        else:
-            print "22. Database stops attempts to record matches with participants who have not entered relevant tournament"
-
-    if len(getPlayedMatches(t1)) != 2 or len(getPlayedMatches(t2)) != 2:
+    if len(getPlayedMatches(tournament1)) != 2 or len(getPlayedMatches(tournament2)) != 2:
         raise ValueError("There should be two matches in each tournament")
 
-    for (i, n, w, m) in playerStandings(t1):
+    for (i, n, w, m) in playerStandings(tournament1):
         if m != 1:
             raise ValueError("Each player should have one match recorded.")
-        if i in (p1, p3) and w != 1:
+        if i in (player1, player3) and w != 1:
             raise ValueError("Each match winner should have one win recorded.")
-        elif i in (p2, p4) and w != 0:
+        elif i in (player2, player4) and w != 0:
             raise ValueError("Each match loser should have zero wins recorded.")
 
-    for (i, n, w, m) in playerStandings(t2):
+    for (i, n, w, m) in playerStandings(tournament2):
         if m != 1:
             raise ValueError("Each player should have one match recorded.")
-        if i in (p3, p5) and w != 1:
+        if i in (player3, player5) and w != 1:
             raise ValueError("Each match winner should have one win recorded.")
-        elif i in (p4, p2) and w != 0:
+        elif i in (player4, player2) and w != 0:
             raise ValueError("Each match loser should have zero wins recorded.")
 
-    # Database cleanup
-    deleteMatches()
-    deletePlayers()
-    deleteTournaments()
-
-    print "23. After a match, players have updated standings for the relevant tournament."
+    print "22. After a match, players have updated standings for the relevant tournament."
 
 def testDeleteMatchesByTournament():
     # Clean out database
@@ -398,46 +384,41 @@ def testDeleteMatchesByTournament():
     deletePlayers()
     deleteTournaments()
 
-    t1 = createTournament("t1")
-    t2 = createTournament("t2")
-    p1 = registerPlayer("Bob")
-    p2 = registerPlayer("Tim")
-    p3 = registerPlayer("Dave")
+    tournament1 = createTournament("t1")
+    tournament2 = createTournament("t2")
+    player1 = registerPlayer("Bob")
+    player2 = registerPlayer("Tim")
+    player3 = registerPlayer("Dave")
 
-    addPlayerToTournament(p1, t1)
-    addPlayerToTournament(p2, t1)
-    addPlayerToTournament(p3, t1)
-    addPlayerToTournament(p1, t2)
-    addPlayerToTournament(p2, t2)
-    addPlayerToTournament(p3, t2)
+    addPlayerToTournament(player1, tournament1)
+    addPlayerToTournament(player2, tournament1)
+    addPlayerToTournament(player3, tournament1)
+    addPlayerToTournament(player1, tournament2)
+    addPlayerToTournament(player2, tournament2)
+    addPlayerToTournament(player3, tournament2)
 
-    reportMatch(p1, p2, t1)
-    reportMatch(p2, p3, t2)
+    reportMatch(player1, player2, tournament1)
+    reportMatch(player2, player3, tournament2)
 
-    if getPlayedMatches(t1) != [(p1, p2)] or getPlayedMatches(t2) != [(p2, p3)]:
+    if getPlayedMatches(tournament1) != [(player1, player2)] or getPlayedMatches(tournament2) != [(player2, player3)]:
         raise ValueError("Match reporting not working")
 
-    deleteMatches(t2)
+    deleteMatches(tournament2)
 
-    if getPlayedMatches(t1) != [(p1, p2)]:
+    if getPlayedMatches(tournament1) != [(player1, player2)]:
         raise ValueError("deleteMatches() has deleted too much")
 
-    if getPlayedMatches(t2) != []:
+    if getPlayedMatches(tournament2) != []:
         raise ValueError("deleteMatches() has not deleted the matches from tournament t2")
 
-    print "24. deleteMatches can delete matches from a named tournament, leaving the matches of other tournaments in place"
-
-    # Database cleanup
-    deleteMatches()
-    deletePlayers()
-    deleteTournaments()
+    print "23. deleteMatches can delete matches from a named tournament, leaving the matches of other tournaments in place"
 
 def testPlayerStandings():
     deleteMatches()
     deletePlayers()
     deleteTournaments()
-    t1 = createTournament("t1")
-    t2 = createTournament("t2")
+    tournament1 = createTournament("t1")
+    tournament2 = createTournament("t2")
     p1 = registerPlayer("Bruno Walton")
     p2 = registerPlayer("Boots O'Neal")
     p3 = registerPlayer("Cathy Burton")
@@ -445,19 +426,19 @@ def testPlayerStandings():
     p5 = registerPlayer("Bob, son of Tim")
     p6 = registerPlayer("Ted, son of Ed")
 
-    addPlayerToTournament(p1, t1)
-    addPlayerToTournament(p2, t1)
-    addPlayerToTournament(p3, t1)
-    addPlayerToTournament(p4, t1)
+    addPlayerToTournament(p1, tournament1)
+    addPlayerToTournament(p2, tournament1)
+    addPlayerToTournament(p3, tournament1)
+    addPlayerToTournament(p4, tournament1)
 
-    addPlayerToTournament(p3, t2)
-    addPlayerToTournament(p4, t2)
-    addPlayerToTournament(p5, t2)
-    addPlayerToTournament(p6, t2)
+    addPlayerToTournament(p3, tournament2)
+    addPlayerToTournament(p4, tournament2)
+    addPlayerToTournament(p5, tournament2)
+    addPlayerToTournament(p6, tournament2)
 
     # Tests
-    reportMatch(p1, p4, t1)
-    standings_t1 = iter(playerStandings(t1))
+    reportMatch(p1, p4, tournament1)
+    standings_t1 = iter(playerStandings(tournament1))
     if next(standings_t1) != (p1, "Bruno Walton", 1, 1):
         raise ValueError('The first row in the standings for tournament t1 should be ({0}, "Bruno Walton", 1, 1)'.format(p1))
     for row in standings_t1:
@@ -470,24 +451,24 @@ def testPlayerStandings():
             if row[3] != 0:
                 raise ValueError('{0} should have a match count of 0'.format(row[1]))
 
-    reportMatch(p3, p1, t1)
-    standings_t1 = playerStandings(t1)
+    reportMatch(p3, p1, tournament1)
+    standings_t1 = playerStandings(tournament1)
     if set(standings_t1) != set([(p1, "Bruno Walton", 1, 2),
                                  (p3, "Cathy Burton", 1, 1),
                                  (p2, "Boots O'Neal", 0, 0),
                                  (p4, "Diane Grant", 0, 1)]):
         raise ValueError("Player standings for tournament t1 are incorrect.")
 
-    reportMatch(p4, p2, t1)
-    standings_t1 = playerStandings(t1)
+    reportMatch(p4, p2, tournament1)
+    standings_t1 = playerStandings(tournament1)
     if set(standings_t1) != set([(p1, "Bruno Walton", 1, 2),
                                  (p3, "Cathy Burton", 1, 1),
                                  (p2, "Boots O'Neal", 0, 1),
                                  (p4, "Diane Grant", 1, 2)]):
         raise ValueError("Player standings for tournament t1 are incorrect.")
 
-    reportMatch(p3, p4, t2)
-    standings_t2 = iter(playerStandings(t2))
+    reportMatch(p3, p4, tournament2)
+    standings_t2 = iter(playerStandings(tournament2))
     if next(standings_t2) != (p3, "Cathy Burton", 1, 1):
         raise ValueError('The first row in the standings for tournament t2 should be ({0}, "Cathy Burton", 1, 1)'.format(p3))
     for row in standings_t2:
@@ -500,43 +481,38 @@ def testPlayerStandings():
             if row[3] != 0:
                 raise ValueError('{0} should have a match count of 0'.format(row[1]))
 
-    reportMatch(p2, p1, t1)
-    standings_t1 = playerStandings(t1)
+    reportMatch(p2, p1, tournament1)
+    standings_t1 = playerStandings(tournament1)
     if set(standings_t1) != set([(p1, "Bruno Walton", 1, 3),
                                  (p3, "Cathy Burton", 1, 1),
                                  (p2, "Boots O'Neal", 1, 2),
                                  (p4, "Diane Grant", 1, 2)]):
         raise ValueError("Player standings for tournament t1 are incorrect.")
 
-    reportMatch(p6, p3, t2)
-    standings_t2 = playerStandings(t2)
+    reportMatch(p6, p3, tournament2)
+    standings_t2 = playerStandings(tournament2)
     if set(standings_t2) != set([(p3, "Cathy Burton", 1, 2),
                                  (p4, "Diane Grant", 0, 1),
                                  (p5, "Bob, son of Tim", 0, 0),
                                  (p6, "Ted, son of Ed", 1, 1)]):
         raise ValueError("Player standings for tournament t2 are incorrect.")
 
-    reportMatch(p3, p4, t1)
-    standings_t1 = playerStandings(t1)
+    reportMatch(p3, p4, tournament1)
+    standings_t1 = playerStandings(tournament1)
     if set(standings_t1) != set([(p1, "Bruno Walton", 1, 3),
                                  (p3, "Cathy Burton", 2, 2),
                                  (p2, "Boots O'Neal", 1, 2),
                                  (p4, "Diane Grant", 1, 3)]):
         raise ValueError("Player standings for tournament t1 are incorrect.")
 
-    # Database cleanup
-    deleteMatches()
-    deletePlayers()
-    deleteTournaments()
-
-    print "25. playerStandings() tracks match reporting accurately for multiple tournaments."
+    print "24. playerStandings() tracks match reporting accurately for multiple tournaments."
 
 def testPairingByTournament():
     deleteMatches()
     deletePlayers()
     deleteTournaments()
-    t1 = createTournament("t1")
-    t2 = createTournament("t2")
+    tournament1 = createTournament("t1")
+    tournament2 = createTournament("t2")
     p1 = registerPlayer("Twilight Sparkle")
     p2 = registerPlayer("Fluttershy")
     p3 = registerPlayer("Applejack")
@@ -544,22 +520,22 @@ def testPairingByTournament():
     p5 = registerPlayer("Cathy Burton")
     p6 = registerPlayer("Diane Grant")
     p7 = registerPlayer("Bob, son of Tim")
-    addPlayerToTournament(p1, t1)
-    addPlayerToTournament(p2, t1)
-    addPlayerToTournament(p3, t1)
-    addPlayerToTournament(p4, t1)
-    addPlayerToTournament(p4, t2)
-    addPlayerToTournament(p5, t2)
-    addPlayerToTournament(p6, t2)
-    addPlayerToTournament(p7, t2)
+    addPlayerToTournament(p1, tournament1)
+    addPlayerToTournament(p2, tournament1)
+    addPlayerToTournament(p3, tournament1)
+    addPlayerToTournament(p4, tournament1)
+    addPlayerToTournament(p4, tournament2)
+    addPlayerToTournament(p5, tournament2)
+    addPlayerToTournament(p6, tournament2)
+    addPlayerToTournament(p7, tournament2)
 
-    reportMatch(p1, p2, t1)
-    reportMatch(p3, p4, t1)
+    reportMatch(p1, p2, tournament1)
+    reportMatch(p3, p4, tournament1)
 
-    reportMatch(p4, p5, t2)
-    reportMatch(p6, p7, t2)
+    reportMatch(p4, p5, tournament2)
+    reportMatch(p6, p7, tournament2)
 
-    pairings1 = swissPairings(t1)
+    pairings1 = swissPairings(tournament1)
     if len(pairings1) != 2:
         raise ValueError(
             "For four players, swissPairings should return two pairs.")
@@ -570,7 +546,7 @@ def testPairingByTournament():
         raise ValueError(
             "After one match, players with one win should be paired.")
 
-    pairings2 = swissPairings(t2)
+    pairings2 = swissPairings(tournament2)
     if len(pairings2) != 2:
         raise ValueError(
             "For four players, swissPairings should return two pairs.")
@@ -581,12 +557,7 @@ def testPairingByTournament():
         raise ValueError(
             "After one match, players with one win should be paired.")
 
-    print "26. After one match in each of two tournaments, players with one win are paired."
-
-    # Database cleanup
-    deleteMatches()
-    deletePlayers()
-    deleteTournaments()
+    print "25. After one match in each of two tournaments, players with one win are paired."
 
 if __name__ == '__main__':
     testDeleteMatches()

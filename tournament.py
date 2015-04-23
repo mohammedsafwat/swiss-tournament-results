@@ -22,7 +22,7 @@ def deleteTournaments():
 
 def deleteMatches(tournament=None):
     """
-    If a tournament id is passed, delete that tournament's matches,
+    If a tournament id number is passed, delete that tournament's matches,
     else, remove all the match records from the database.
     """
     db = connect()
@@ -57,7 +57,7 @@ def addPlayerToTournament(player_id, tournament):
     """Add a player to a specific tournament"""
     db = connect()
     cursor = db.cursor()
-    cursor.execute("INSERT INTO players_in_tournament(player_id, tournament_id) VALUES(%s, %s)",
+    cursor.execute("INSERT INTO players_in_tournaments(player_id, tournament_id) VALUES(%s, %s)",
                    (player_id, tournament))
     db.commit()
     db.close()
@@ -81,7 +81,7 @@ def countPlayers(tournament=None):
         cursor.execute(number_of_players_for_all_tournaments_query)
         # Get number of players from this specific tournament
         number_of_players_for_specific_tournament_query = """
-        SELECT players_number FROM players_per_tournament WHERE tournament_id=(%s)"
+        SELECT players_number FROM players_per_tournament WHERE tournament_id=(%s)
         """
         cursor.execute(number_of_players_for_specific_tournament_query, (tournament,))
     else:
@@ -162,7 +162,7 @@ def playerStandings(tournament):
     FROM winners LEFT JOIN losers ON winners.player_id = losers.player_id AND winners.tournament_id=losers.tournament_id
     WHERE winners.tournament_id=(%s)
     """
-    cursor.execute(player_standings_query, tournament)
+    cursor.execute(player_standings_query, (tournament,))
     player_standings = cursor.fetchall()
     db.close()
     return player_standings
