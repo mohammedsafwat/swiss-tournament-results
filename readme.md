@@ -1,9 +1,10 @@
+#Description#
 A Python module that uses the PostgreSQL database to keep track of players and matches in a game tournament.
 The game tournament will use the Swiss system for pairing up players in each round: players are not eliminated,
 and each player should be paired with another player with the same number of wins, or as close as possible.
 
-***Classes:***
-**tournament.sql**
+#Classes:#
+##tournament.sql##
 
 Contains the sql schema for our database. We create four tables in the database:
 - players : a table holding the player names and their serial ids.
@@ -13,7 +14,7 @@ will have a tournament_id.
 - matches : a table holding the matches results for each match played. It records the id of the winner, the id of the
 loser, and the id of the tournament that they played inside, and records the serial number of the played match too.
 
-**tournament.py**
+##tournament.py##
 
 holds the implementation of the needed methods to construct a Swiss-system tournament.
 
@@ -41,11 +42,11 @@ return the all number of players currently registered.
 
 - swissPairings(tournament): Returns a list of pairs of players for the next round of a match for a specific tournament.
 
-**tournament_test.py**
+##tournament_test.py##
 
 Contains a set of unit tests for the Swiss-system tournament methods implementation.
 
-***How to run unit tests:***
+#How to run unit tests:#
 
 Just type python tournament_test.py.
 Everything is well when the last printed statement to console is "Success!  All tests pass!".
