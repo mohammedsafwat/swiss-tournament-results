@@ -2,6 +2,9 @@
 #
 # Test cases for tournament.py
 
+# Citation: I looked at this project : https://github.com/samfrances/udacity-swiss-system-tournament
+# to get guidance regarding write unit tests for the extra credit cases only.
+
 from tournament import *
 
 def testDeleteMatches():
