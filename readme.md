@@ -4,6 +4,7 @@ and each player should be paired with another player with the same number of win
 
 ***Classes:***
 **tournament.sql**
+
 Contains the sql schema for our database. We create four tables in the database:
 - players : a table holding the player names and their serial ids.
 - tournaments : a table holding the tournaments names and their serial ids.
@@ -13,6 +14,7 @@ will have a tournament_id.
 loser, and the id of the tournament that they played inside, and records the serial number of the played match too.
 
 **tournament.py**
+
 holds the implementation of the needed methods to construct a Swiss-system tournament.
 
 - deleteTournaments(): Deletes all tournaments from database.
@@ -40,9 +42,11 @@ return the all number of players currently registered.
 - swissPairings(tournament): Returns a list of pairs of players for the next round of a match for a specific tournament.
 
 **tournament_test.py**
+
 Contains a set of unit tests for the Swiss-system tournament methods implementation.
 
 ***How to run unit tests:***
+
 Just type python tournament_test.py.
 Everything is well when the last printed statement to console is "Success!  All tests pass!".
 
