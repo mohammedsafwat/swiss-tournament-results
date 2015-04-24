@@ -4,7 +4,7 @@ The game tournament will use the Swiss system for pairing up players in each rou
 and each player should be paired with another player with the same number of wins, or as close as possible.
 
 #Classes:#
-##tournament.sql##
+###tournament.sql###
 
 Contains the sql schema for our database. We create four tables in the database:
 - players : a table holding the player names and their serial ids.
@@ -14,7 +14,7 @@ will have a tournament_id.
 - matches : a table holding the matches results for each match played. It records the id of the winner, the id of the
 loser, and the id of the tournament that they played inside, and records the serial number of the played match too.
 
-##tournament.py##
+###tournament.py###
 
 holds the implementation of the needed methods to construct a Swiss-system tournament.
 
@@ -42,12 +42,18 @@ return the all number of players currently registered.
 
 - swissPairings(tournament): Returns a list of pairs of players for the next round of a match for a specific tournament.
 
-##tournament_test.py##
+###tournament_test.py###
 
 Contains a set of unit tests for the Swiss-system tournament methods implementation.
 
-#How to run unit tests:#
+#How to run:#
+- First, you need to create the database. "tournament.sql" is where we'll create our database schema and views; we also have the option of creating the database and tables in this file.
+- With the  psql command line interface (cli), you can run any SQL statement using the tables in the connected database. Make sure to end SQL statements with a semicolon, which is not always required from Python.
+- To build and access the database we run psql followed by \i tournament.sql
+- You will have four tables created after that, according to the schema in "tournament.sql"
+- You can change the database name from "tournament.sql", from this line CREATE DATABASE [database name];.
 
+##How to run unit tests:##
 Just type python tournament_test.py.
 Everything is well when the last printed statement to console is "Success!  All tests pass!".
 
