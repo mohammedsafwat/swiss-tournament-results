@@ -47,13 +47,10 @@ return the all number of players currently registered.
 Contains a set of unit tests for the Swiss-system tournament methods implementation.
 
 #How to run:#
-- First, you need to create the database. "tournament.sql" is where we'll create our database schema and views; we also have the option of creating the database and tables in this file.
-- With the  psql command line interface (cli), you can run any SQL statement using the tables in the connected database. Make sure to end SQL statements with a semicolon, which is not always required from Python.
-- To build and access the database we run psql followed by \i tournament.sql
-- You will have four tables created after that, according to the schema in "tournament.sql"
+- Clone the whole directory to your local machine.
+- Open the psql command line interface, and run "\i tournament.sql". This will build the database, connect to it and create database tabes.
+- You will get four tables created after that, according to the schema in "tournament.sql"
 - You can change the database name from "tournament.sql", from this line CREATE DATABASE [database name];.
-
-##How to run unit tests:##
-Just type python tournament_test.py.
-Everything is well when the last printed statement to console is "Success!  All tests pass!".
+- After that, you can run "tournament_test.py" to run the unit tests. Make sure that you are in the project's directory and run "python tournament_test.py" in terminal.
+- Everything is running well when the last printed statement to console is "Success!  All tests pass!".
 
