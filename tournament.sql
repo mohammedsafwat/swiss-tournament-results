@@ -7,6 +7,8 @@
 -- these lines here.
 
 -- Create database
+-- Drop the database if exists, before creating the new tournament database. This assures no conflicts or errors if the database already exists.
+DROP DATABASE IF EXISTS tournament;
 CREATE DATABASE tournament;
 -- Connect to database
 \c tournament;
