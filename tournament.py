@@ -4,6 +4,7 @@
 #
 
 import psycopg2
+import bleach
 from itertools import chain
 
 DBNAME = 'tournament'
@@ -28,6 +29,7 @@ def deleteMatches(tournament=None):
     else, remove all the match records from the database.
     """
     db, cursor = connect()
+    tournament = bleach.clean(tournament)
     if tournament:
         delete_match_in_tournament_query = "DELETE FROM matches WHERE tournament_id=(%s)"
         cursor.execute(delete_match_in_tournament_query, (tournament,))
@@ -49,6 +51,7 @@ def deletePlayers():
 def createTournament(name):
     """Create a new tournament"""
     db, cursor = connect()
+    name = bleach.clean(name)
     create_tournament_query = "INSERT INTO tournaments(tournament_name) VALUES(%s) RETURNING tournament_id"
     cursor.execute(create_tournament_query, (name,))
     row_id = cursor.fetchone()[0]
@@ -59,6 +62,8 @@ def createTournament(name):
 def addPlayerToTournament(player_id, tournament):
     """Add a player to a specific tournament"""
     db, cursor = connect()
+    player_id = bleach.clean(player_id)
+    tournament = bleach.clean(tournament)
     add_player_to_tournament_query = "INSERT INTO players_in_tournaments(player_id, tournament_id) VALUES(%s, %s)"
     cursor.execute(add_player_to_tournament_query,
                    (player_id, tournament))
@@ -71,6 +76,7 @@ def countPlayers(tournament=None):
     else return the all number of players currently registered.
     """
     db, cursor = connect()
+    tournament = bleach.clean(tournament)
     if tournament:
         # Create a view to get the number of players in each tournament
         number_of_players_for_all_tournaments_query = """
@@ -106,6 +112,7 @@ def registerPlayer(name):
     """
     db, cursor = connect()
     register_player_query = "INSERT INTO players(player_name) VALUES(%s) RETURNING player_id"
+    name = bleach.clean(name)
     cursor.execute(register_player_query, (name,))
     row_id = cursor.fetchone()[0]
     db.commit()
@@ -164,6 +171,7 @@ def playerStandings(tournament):
     FROM winners LEFT JOIN losers ON winners.player_id = losers.player_id AND winners.tournament_id=losers.tournament_id
     WHERE winners.tournament_id=(%s)
     """
+    tournament = bleach.clean(tournament)
     cursor.execute(player_standings_query, (tournament,))
     player_standings = cursor.fetchall()
     db.close()
@@ -180,6 +188,9 @@ def reportMatch(winner, loser, tournament):
     """
     db, cursor = connect()
     report_match_query = "INSERT INTO matches(winner_id, loser_id, tournament_id) VALUES(%s,%s, %s)"
+    winner = bleach.clean(winner)
+    loser = bleach.clean(loser)
+    tournament = bleach.clean(tournament)
     cursor.execute(report_match_query, (winner, loser, tournament))
     db.commit()
     db.close()
@@ -192,6 +203,7 @@ def getPlayedMatches(tournament):
     """
     db, cursor = connect()
     playerd_matches_query = "SELECT winner_id, loser_id FROM matches WHERE tournament_id=(%s)"
+    tournament = bleach.clean(tournament)
     cursor.execute(playerd_matches_query, (tournament,))
     matches = cursor.fetchall()
     db.close()
@@ -213,6 +225,7 @@ def swissPairings(tournament):
         name2: the second player's name
     """
     # Get list of matches played
+    tournament = bleach.clean(tournament)
     matches = getPlayedMatches(tournament)
     standings = [(record[0], record[1]) for record in playerStandings(tournament)]
 
