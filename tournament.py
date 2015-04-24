@@ -234,11 +234,12 @@ def swissPairings(tournament):
     left = standings[0::2]
     right = standings[1::2]
     pairings = zip(left, right)
-    results = []
-    for pairing in pairings:
-        if set(pairing) not in matches:
-            pairing = chain(*pairing)
-            results.append(pairing)
+    #results = []
+    #for pairing in pairings:
+        #if set(pairing) not in matches:
+            #pairing = chain(*pairing)
+            #results.append(pairing)
+    results = [chain(*pairing) for pairing in pairings if set(pairing) not in matches]
     return results
 
 
