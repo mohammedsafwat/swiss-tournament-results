@@ -154,9 +154,9 @@ def testDeleteTournaments():
     print("10. Old tournaments can be deleted.")
 
     # Check that there are no tournaments in the table
-    db = connect()
-    cursor = db.cursor()
-    cursor.execute("SELECT COUNT(*) FROM tournaments;")
+    db, cursor = connect()
+    number_of_tournaments_query = "SELECT COUNT(*) FROM tournaments;"
+    cursor.execute(number_of_tournaments_query)
     count = cursor.fetchall()[0][0]
     db.close()
     if count != 0:
@@ -188,9 +188,9 @@ def testCreateTournament():
     print("14. After running createTournament() again, 2 tournaments exists in the database.")
 
 def getCurrentTournamentsCount():
-    db = connect()
-    cursor = db.cursor()
-    cursor.execute("SELECT COUNT(*) FROM tournaments;")
+    db, cursor = connect()
+    number_of_tournaments_query = "SELECT COUNT(*) FROM tournaments;"
+    cursor.execute(number_of_tournaments_query)
     count = cursor.fetchall()[0][0]
     db.close()
     return count
@@ -211,9 +211,9 @@ def testAddPlayerToTournament():
     addPlayerToTournament(player3, tournament2)
 
     # test tournament1
-    db = connect()
-    cursor = db.cursor()
-    cursor.execute("SELECT * FROM players_in_tournaments WHERE tournament_id=(%s)", (tournament1,))
+    db, cursor = connect()
+    get_players_in_tournament_query = "SELECT * FROM players_in_tournaments WHERE tournament_id=(%s)"
+    cursor.execute(get_players_in_tournament_query, (tournament1,))
     rows = cursor.fetchall()
 
     if len(rows) != 1:
@@ -225,7 +225,7 @@ def testAddPlayerToTournament():
     print("16. Correct player added to tournament1.")
 
     # test tournament 2
-    cursor.execute("SELECT * FROM players_in_tournaments WHERE tournament_id=(%s)", (tournament2,))
+    cursor.execute(get_players_in_tournament_query, (tournament2,))
     rows = cursor.fetchall()
 
     if len(rows) != 2:

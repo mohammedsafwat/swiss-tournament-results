@@ -10,13 +10,15 @@ DBNAME = 'tournament'
 
 def connect(dbname=DBNAME):
     """Connect to the PostgreSQL database.  Returns a database connection."""
-    return psycopg2.connect('dbname=' + dbname)
+    connection = psycopg2.connect('dbname=' + dbname)
+    cursor = connection.cursor()
+    return connection, cursor
 
 def deleteTournaments():
     """Delete all tournaments from database."""
-    db = connect()
-    cursor = db.cursor()
-    cursor.execute("DELETE FROM tournaments")
+    db, cursor = connect()
+    delete_tournaments_query = "DELETE FROM tournaments"
+    cursor.execute(delete_tournaments_query)
     db.commit()
     db.close()
 
@@ -25,29 +27,30 @@ def deleteMatches(tournament=None):
     If a tournament id number is passed, delete that tournament's matches,
     else, remove all the match records from the database.
     """
-    db = connect()
-    cursor = db.cursor()
+    db, cursor = connect()
     if tournament:
-        cursor.execute("DELETE FROM matches WHERE tournament_id=(%s)", (tournament,))
+        delete_match_in_tournament_query = "DELETE FROM matches WHERE tournament_id=(%s)"
+        cursor.execute(delete_match_in_tournament_query, (tournament,))
     else:
-        cursor.execute("DELETE FROM matches")
+        delete_all_matches_query = "DELETE FROM matches"
+        cursor.execute(delete_all_matches_query)
     db.commit()
     db.close()
 
 
 def deletePlayers():
     """Remove all the player records from the database."""
-    db = connect()
-    cursor = db.cursor()
-    cursor.execute("DELETE FROM players")
+    db, cursor = connect()
+    delete_all_players_query = "DELETE FROM players"
+    cursor.execute(delete_all_players_query)
     db.commit()
     db.close()
 
 def createTournament(name):
     """Create a new tournament"""
-    db = connect()
-    cursor = db.cursor()
-    cursor.execute("INSERT INTO tournaments(tournament_name) VALUES(%s) RETURNING tournament_id", (name,))
+    db, cursor = connect()
+    create_tournament_query = "INSERT INTO tournaments(tournament_name) VALUES(%s) RETURNING tournament_id"
+    cursor.execute(create_tournament_query, (name,))
     row_id = cursor.fetchone()[0]
     db.commit()
     db.close()
@@ -55,9 +58,9 @@ def createTournament(name):
 
 def addPlayerToTournament(player_id, tournament):
     """Add a player to a specific tournament"""
-    db = connect()
-    cursor = db.cursor()
-    cursor.execute("INSERT INTO players_in_tournaments(player_id, tournament_id) VALUES(%s, %s)",
+    db, cursor = connect()
+    add_player_to_tournament_query = "INSERT INTO players_in_tournaments(player_id, tournament_id) VALUES(%s, %s)"
+    cursor.execute(add_player_to_tournament_query,
                    (player_id, tournament))
     db.commit()
     db.close()
@@ -67,8 +70,7 @@ def countPlayers(tournament=None):
     if a tournament id is passed, count the number of players added to this tournament,
     else return the all number of players currently registered.
     """
-    db = connect()
-    cursor = db.cursor()
+    db, cursor = connect()
     if tournament:
         # Create a view to get the number of players in each tournament
         number_of_players_for_all_tournaments_query = """
@@ -85,7 +87,8 @@ def countPlayers(tournament=None):
         """
         cursor.execute(number_of_players_for_specific_tournament_query, (tournament,))
     else:
-        cursor.execute("SELECT COUNT(*) FROM players")
+        numer_of_all_players_query = "SELECT COUNT(*) FROM players"
+        cursor.execute(numer_of_all_players_query)
     result = cursor.fetchone()
     number_of_players = result[0]
     db.close()
@@ -101,9 +104,9 @@ def registerPlayer(name):
     Args:
       name: the player's full name (need not be unique).
     """
-    db = connect()
-    cursor = db.cursor()
-    cursor.execute("INSERT INTO players(player_name) VALUES(%s) RETURNING player_id", (name,))
+    db, cursor = connect()
+    register_player_query = "INSERT INTO players(player_name) VALUES(%s) RETURNING player_id"
+    cursor.execute(register_player_query, (name,))
     row_id = cursor.fetchone()[0]
     db.commit()
     db.close()
@@ -123,8 +126,7 @@ def playerStandings(tournament):
         wins: the number of matches the player has won
         matches: the number of matches the player has played
     """
-    db = connect()
-    cursor = db.cursor()
+    db, cursor = connect()
     # number of wins
     number_of_wins_query = """
     CREATE VIEW winners AS
@@ -176,9 +178,9 @@ def reportMatch(winner, loser, tournament):
       loser:  the id number of the player who lost
       tournament: the id number of the match's tournament
     """
-    db = connect()
-    cursor = db.cursor()
-    cursor.execute("INSERT INTO matches(winner_id, loser_id, tournament_id) VALUES(%s,%s, %s)", (winner, loser, tournament))
+    db, cursor = connect()
+    report_match_query = "INSERT INTO matches(winner_id, loser_id, tournament_id) VALUES(%s,%s, %s)"
+    cursor.execute(report_match_query, (winner, loser, tournament))
     db.commit()
     db.close()
 
@@ -188,9 +190,9 @@ def getPlayedMatches(tournament):
     :param tournament:the id number of the tournament
     :return:list of played matches
     """
-    db = connect()
-    cursor = db.cursor()
-    cursor.execute("SELECT winner_id, loser_id FROM matches WHERE tournament_id=(%s)", (tournament,))
+    db, cursor = connect()
+    playerd_matches_query = "SELECT winner_id, loser_id FROM matches WHERE tournament_id=(%s)"
+    cursor.execute(playerd_matches_query, (tournament,))
     matches = cursor.fetchall()
     db.close()
     return  matches
