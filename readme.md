@@ -57,5 +57,6 @@ Contains a set of unit tests for the Swiss-system tournament methods implementat
 #Modules Used:#
 - psycopg2
 - bleach
-###You can install both modules using pip install [module name] from your terminal.###
+
+You can install both modules using pip install [module name] from your terminal.
 
