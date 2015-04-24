@@ -54,3 +54,8 @@ Contains a set of unit tests for the Swiss-system tournament methods implementat
 - After that, you can run "tournament_test.py" to run the unit tests. Make sure that you are in the project's directory and run "python tournament_test.py" in terminal.
 - Everything is running well when the last printed statement to console is "Success!  All tests pass!".
 
+#Modules Used:#
+- psycopg2
+- bleach
+You can install both modules using pip install [module name] from your terminal.
+
